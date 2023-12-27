@@ -1,0 +1,72 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+import javax.swing.JOptionPane;
+
+public class OutputFile extends Frame2
+{
+	private static File file;
+	private static Formatter f;
+	private static Scanner s;
+	
+	public static void main(String[] args) 
+	{		
+		create(); //to create an empty file
+		scan(); //to put the content of the file in
+	}
+	public static void create()
+	{
+		try 
+		{
+			file = new File("output.txt");
+			f = new Formatter(file);
+			
+		}						//exceptions catchers
+		catch(SecurityException s)
+		{
+			JOptionPane.showMessageDialog(null, "Security Exception");
+		}
+		catch(FileNotFoundException i)
+		{
+			JOptionPane.showMessageDialog(null, "(questions.txt) File Not Found.");
+		}	
+	}
+	
+	public static void scan()
+	{
+		try
+		{
+			for(int r = 0; r < 10; r++)
+			{
+				for(int c = 0; c < 5; c++)
+				{
+					if(c == 0)
+						f.format("question: %s%n", questions_and_answers[c][r]);
+					else
+						f.format("answer " + c + ": %s%n", questions_and_answers[c][r]);
+					//adding text to the file
+				
+				}//end for (column)
+			
+				f.format("correct answer: %s%n", correctAnswers[r]);
+				f.format("chosen answer: %s%n", chosenAnswer[r]);
+				
+				if(chosenAnswer[r].compareTo(correctAnswers[r]) == 0)
+					f.format("answer is correct %n", null);
+				else
+					f.format("answer is incorrect %n", null);
+				
+			}//end for (row)
+		
+		f.close();
+		}
+		catch(FormatterClosedException f)
+		{
+			JOptionPane.showMessageDialog(null, "The formatter is closed");
+		}
+		catch(Exception n)//change
+		{
+			n.printStackTrace();
+		}
+	}	
+}
