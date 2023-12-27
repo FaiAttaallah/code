@@ -1,0 +1,431 @@
+import java.util.*;
+import java.util.List;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.Timer;
+import java.awt.event.*;
+
+public class Frame2 //extends Frame1
+{
+//------------------------------------------- GUI components ------------------------------------------------//
+	private JFrame f; //f is for questions frame
+	private JPanel p1, p2, p3, p4;
+	//p1 for question, p2 for answer choices, p3 for submit button, p4 for answer checking
+	
+	private JLabel question, picture;
+	private JTextField result;
+	private JRadioButton answer1, answer2, answer3, answer4;
+	private ButtonGroup gb;
+	private JButton submit, close;
+	ImageIcon q = new ImageIcon("Question.png");
+	ImageIcon c = new ImageIcon("Correct.png");
+	ImageIcon w = new ImageIcon("Wrong.png");
+	
+//------------------------------------------- others ------------------------------------------------//
+	private List<Integer> numbers;
+	private Random r;
+	
+	InputFileHandler in = new InputFileHandler();
+	protected static String[][] questions_and_answers = InputFileHandler.handle();
+	private int i1 = randIndex();
+	
+	protected static String[] correctAnswers = new String[10];
+	protected static String[] chosenAnswer = new String[10];
+	private String name = "";
+	private int score = 0;
+	private long StartTime;
+	
+	public Frame2()
+	{
+		//frame settings:
+		f = new JFrame("Trivia Questions");
+		f.setResizable(false);
+		f.setVisible(true);
+		f.setSize(600, 500);
+		f.setLayout(new GridLayout(4,2));
+		f.setLocationRelativeTo(null);
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		//first panel:
+		p1 = new JPanel();
+		p1.setBackground(Color.lightGray);
+		question = new JLabel(questions_and_answers[0][i1]);
+		question.setHorizontalAlignment(JLabel.CENTER);
+		p1.add(question);
+		picture = new JLabel();
+		picture.setIcon(q);
+		picture.setHorizontalAlignment(JLabel.RIGHT);
+		p1.add(picture);
+		f.add(p1);
+		
+		//second panel:
+		p2 = new JPanel();
+		p2.setLayout(new FlowLayout());//for the answers
+		p2.setBackground(Color.lightGray);
+		gb = new ButtonGroup();
+		answer1 = new JRadioButton(questions_and_answers[1][i1]);
+		answer1.setSelected(false);
+		gb.add(answer1);
+		p2.add(answer1);
+		answer2 = new JRadioButton(questions_and_answers[2][i1]);
+		answer2.setSelected(false);
+		gb.add(answer2);
+		p2.add(answer2);
+		answer3 = new JRadioButton(questions_and_answers[3][i1]);
+		answer3.setSelected(false);
+		
+		//if condition to check if answer3 and answer4 are empty 
+		if(answer3.getText().compareTo("") != 0) 
+		{
+			gb.add(answer3);
+			p2.add(answer3);
+		}
+		answer4 = new JRadioButton(questions_and_answers[4][i1]);
+		answer4.setSelected(false);
+		if(answer4.getText().compareTo("") != 0)
+		{
+			gb.add(answer4);
+			p2.add(answer4);
+		}
+		f.add(p2);
+		
+		//third panel:
+		p3 = new JPanel();
+		p3.setBackground(Color.lightGray);
+		submit = new JButton("submit");
+		p3.add(submit);
+		f.add(p3);
+		
+		//forth panel:
+		p4 = new JPanel();
+		p4.setBackground(Color.lightGray);
+		f.add(p4);
+		
+		f.repaint();
+		f.revalidate();
+		long StartTime = System.currentTimeMillis();//starting the timer
+		
+		if(answer1.isSelected() || answer2.isSelected() || answer3.isSelected() || answer4.isSelected()) //if one of the answers is selected, the action executes
+		{
+			submit.addActionListener(new Action());
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(null, "no answer was selected, please select an answer.", "unanswered", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+//------------------------------------------- methods ------------------------------------------------//
+	//--------------------------------- Action event -------------------------------------
+	private class Action implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e) 
+		{
+			answerChecker(i1);//check the first question
+			
+			int delay = 2000; //delay to see the answer
+			ActionListener taskPerformer = new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					QuestionsChanger();			 		
+				}
+			};
+			new Timer(delay, taskPerformer).start();
+			
+			((Timer)e.getSource()).stop();
+		}
+	}
+	
+	//--------------------------------- random index for questions -------------------------------------
+	public int randIndex()//random index
+	{
+		numbers = new ArrayList<>();
+		r = new Random();
+		
+		if(numbers.size() == 10)//if all questions were used, do (last)
+		{
+			Last();
+		}
+		
+		int index;
+		do {
+			index = r.nextInt(10); //nextInt is to get random numbers under 10
+		}
+		while(numbers.contains(index)); 
+		//as long as the number exists in the list it will keep getting other numbers 
+		
+		numbers.add(index); //to add the numbers that are not in the list to the list
+		return index;
+	}
+	
+	//--------------------------------- changes questions -------------------------------------
+	public void QuestionsChanger() //to change a question
+	{
+		p2.removeAll();
+		p2.setLayout(new FlowLayout());
+		p4.setBackground(Color.lightGray); //get last panel to original color
+		int i2 = randIndex();
+		//Reputing the second panel for the next random question 
+		question.setText(questions_and_answers[0][i2]);
+		
+		gb = new ButtonGroup();
+		answer1 = new JRadioButton(questions_and_answers[1][i2]);
+		answer1.setSelected(false);;
+		gb.add(answer1);
+		p2.add(answer1);
+		answer2 = new JRadioButton(questions_and_answers[2][i2]);
+		answer2.setSelected(false);
+		gb.add(answer2);
+		p2.add(answer2);
+		answer3 = new JRadioButton(questions_and_answers[3][i2]);
+		answer3.setSelected(false);
+		if(answer3.getText().compareTo("") != 0)
+		{
+			gb.add(answer3);
+			p2.add(answer3);
+		}
+		answer4 = new JRadioButton(questions_and_answers[4][i2]);
+		answer4.setSelected(false);
+		if(answer4.getText().compareTo("") != 0)
+		{
+			gb.add(answer4);
+			p2.add(answer4);
+		}
+		f.add(p2);
+		
+		answerChecker(i2);
+	}
+	
+	//--------------------------------- checks answers -------------------------------------
+	public void answerChecker(int i)
+	{
+		switch(i)
+		{
+		case 0://q1 (T/F)
+			correctAnswers[i] = answer1.getText();
+			if(answer1.isSelected())//correct answer
+			{
+				score++;//increase the score
+				picture.setIcon(c);//set icon to picture (correct)
+				p4.setBackground(Color.green); //set last panel's background to green
+				chosenAnswer[i] = answer1.getText();//get the chosen answer for the results file
+			}
+			else
+			{
+				if(answer2.isSelected())//if not true, it's false and if not false, it's true
+					chosenAnswer[i] = answer2.getText();
+				
+				picture.setIcon(w);//set icon to picture (wrong)
+				p4.setBackground(Color.red); //set last panel's background to red
+			}
+		case 1://q2 (T/F)
+			correctAnswers[i] = answer2.getText();
+			if(answer2.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer2.getText();
+			}
+			else
+			{
+				if(answer1.isSelected())
+					chosenAnswer[i] = answer1.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 2://q3 (T/F)
+			correctAnswers[i] = answer2.getText();
+			if(answer2.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer2.getText();
+			}
+			else
+			{
+				if(answer1.isSelected())
+					chosenAnswer[i] = answer1.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 3://q4 (T/F)
+			correctAnswers[i] = answer1.getText();
+			if(answer1.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer1.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 4://q5 (T/F)
+			correctAnswers[i] = answer1.getText();
+			if(answer1.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer1.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 5://q6 (MC)
+			correctAnswers[i] = answer2.getText();
+			if(answer2.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer2.getText();
+			}
+			else
+			{
+				if(answer1.isSelected())//check which answer is selected
+					chosenAnswer[i] = answer1.getText();
+				else if(answer3.isSelected())
+					chosenAnswer[i] = answer3.getText();
+				else
+					chosenAnswer[i] = answer4.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 6://q7 (MC)
+			correctAnswers[i] = answer3.getText();
+			if(answer3.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer3.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				else if(answer1.isSelected())
+					chosenAnswer[i] = answer1.getText();
+				else
+					chosenAnswer[i] = answer4.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 7://q8 (MC)
+			correctAnswers[i] = answer1.getText();
+			if(answer1.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer1.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				else if(answer3.isSelected())
+					chosenAnswer[i] = answer3.getText();
+				else
+					chosenAnswer[i] = answer4.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 8://q9 (MC)
+			correctAnswers[i] = answer4.getText();
+			if(answer4.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer4.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				else if(answer3.isSelected())
+					chosenAnswer[i] = answer3.getText();
+				else
+					chosenAnswer[i] = answer1.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		case 9://10 (MC)
+			correctAnswers[i] = answer3.getText();
+			if(answer3.isSelected())//correct answer
+			{
+				score++;
+				picture.setIcon(c);
+				p4.setBackground(Color.green);
+				chosenAnswer[i] = answer3.getText();
+			}
+			else
+			{
+				if(answer2.isSelected())
+					chosenAnswer[i] = answer2.getText();
+				else if(answer1.isSelected())
+					chosenAnswer[i] = answer1.getText();
+				else
+					chosenAnswer[i] = answer4.getText();
+				
+				picture.setIcon(w);
+				p4.setBackground(Color.red);
+			}
+		}//end switch
+	}
+	
+	//--------------------------------- after questions -------------------------------------
+	public void Last()
+	{
+		//removing things that are not usable anymore
+		p1.remove(question);
+		p1.remove(picture);
+		p2.remove(answer1);
+		p2.remove(answer2);
+		p2.remove(answer3);
+		p2.remove(answer4);
+		p3.remove(submit);
+		p4.setBackground(Color.lightGray);
+		
+		long EndTime = System.currentTimeMillis(); //finish timer
+		long total = (EndTime - StartTime) / 1000; //find total time
+		
+		result = new JTextField(25);
+		result.setEditable(false);
+		result.setText(name + "'s score is " + score + ", and the time taken = " + total + "seconds");
+		result.setHorizontalAlignment(JLabel.CENTER);
+		p3.add(result);
+		new OutputFile();//results file
+		
+		close = new JButton("close");//closing button
+		close.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				System.exit(0);
+			}
+		});
+		p4.add(close);
+	}
+}
